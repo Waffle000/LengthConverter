@@ -15,7 +15,7 @@ struct ConvertView: View {
     @State private var isValidInput: Bool = true
     @State private var convertedLength: Double = 0.0
     @State private var localeDecimalSeparator: String = Locale.current.decimalSeparator ?? ""
-    
+
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
@@ -26,42 +26,47 @@ struct ConvertView: View {
                         Text("Length Converter")
                             .font(.title)
                             .fontWeight(.bold)
-                            .foregroundStyle(Color.white)
+                            .foregroundColor(.white)
                             .padding(.top, 8)
                         
                         HStack {
-                            TextField("", text: $lengthInput)
-                                .placeholder(when: lengthInput.isEmpty) {
-                                    Text("Number").foregroundColor(.white.opacity(0.3))
+                            ZStack(alignment: .leading) {
+                                if lengthInput.isEmpty {
+                                    Text("Input")
+                                        .foregroundColor(.white.opacity(0.3))
+                                        .font(.system(size: 48, weight: .bold))
+                                        .padding(.leading, 8)
                                 }
-                                .keyboardType(.decimalPad)
-                                .frame(width: 248)
-                                .padding(.leading, 8)
-                                .foregroundColor(.white)
-                                .accentColor(.white)
-                                .onChange(of: lengthInput) { oldValue, newValue in
-                                    let filteredValue = newValue.filter { "0123456789\(localeDecimalSeparator)".contains($0) }
-                                    if validateInput(filteredValue) {
-                                        let formattedValue = formatNumber(filteredValue)
-                                        lengthInput = formattedValue
-                                        convertLength()
-                                    } else if filteredValue.isEmpty {
-                                        lengthInput = ""
-                                        convertedLength = 0.0
-                                    } else {
-                                        lengthInput = oldValue
+                                TextField("", text: $lengthInput)
+                                    .keyboardType(.decimalPad)
+                                    .frame(width: 248)
+                                    .padding(.leading, 8)
+                                    .foregroundColor(.white)
+                                    .accentColor(.white)
+                                    .onChange(of: lengthInput) { oldValue, newValue in
+                                        let filteredValue = newValue.filter { "0123456789\(localeDecimalSeparator)".contains($0) }
+                                        if validateInput(filteredValue) {
+                                            let formattedValue = formatNumber(filteredValue)
+                                            lengthInput = formattedValue
+                                            convertLength()
+                                        } else if filteredValue.isEmpty {
+                                            lengthInput = ""
+                                            convertedLength = 0.0
+                                        } else {
+                                            lengthInput = oldValue
+                                        }
                                     }
-                                }
-                                .font(.system(size: 48, weight: .bold))
-                                .overlay(
-                                    VStack {
-                                        Spacer()
-                                        Rectangle()
-                                            .frame(height: 2)
-                                            .foregroundColor(isValidInput ? .white : .red)
-                                    }
-                                )
-                                .onReceive(Just(lengthInput)) { _ in limitText(9) }
+                                    .font(.system(size: 48, weight: .bold))
+                                    .overlay(
+                                        VStack {
+                                            Spacer()
+                                            Rectangle()
+                                                .frame(height: 2)
+                                                .foregroundColor(isValidInput ? .white : .red)
+                                        }
+                                    )
+                                    .onReceive(Just(lengthInput)) { _ in limitText(9) }
+                            }
                             
                             Picker("Select a Length Unit", selection: $selectedUnit) {
                                 ForEach(LengthUnit.allCases) { unit in
@@ -90,14 +95,14 @@ struct ConvertView: View {
                             .font(.title)
                             .fontWeight(.bold)
                             .padding(.top, 16)
-                            .foregroundStyle(Color.blue.opacity(0.7))
+                            .foregroundColor(Color.blue.opacity(0.7))
                         
                         HStack {
                             Text("\(formattedConvertedLength())")
                                 .font(.system(size: 48, weight: .bold))
                                 .frame(width: 248, alignment: .leading)
                                 .multilineTextAlignment(.leading)
-                                .foregroundStyle(Color.blue.opacity(0.7))
+                                .foregroundColor(Color.blue.opacity(0.7))
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.5)
                             
@@ -105,7 +110,7 @@ struct ConvertView: View {
                                 ForEach(LengthUnit.allCases) { unit in
                                     Text(unit.rawValue)
                                         .tag(unit)
-                                        .foregroundColor(.blue.opacity(0.7))
+                                        .foregroundColor(Color.blue.opacity(0.7))
                                         .font(.title2)
                                         .fontWeight(.bold)
                                 }
@@ -126,7 +131,15 @@ struct ConvertView: View {
                     isValidInput = true
                     convertedLength = 0.0
                 }, label: {
-                    Text("Reset").font(.title3).fontWeight(.bold ).foregroundStyle(Color.white).padding().frame(maxWidth: .infinity).background(Color.blue.opacity(0.7)).cornerRadius(16).padding(.horizontal, 16)
+                    Text("Reset")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue.opacity(0.7))
+                        .cornerRadius(16)
+                        .padding(.horizontal, 16)
                 })
             }
         }.onTapGesture {
@@ -146,10 +159,10 @@ struct ConvertView: View {
     }
     
     func limitText(_ upper: Int) {
-          if lengthInput.count > upper {
-              lengthInput = String(lengthInput.prefix(upper))
-          }
-      }
+        if lengthInput.count > upper {
+            lengthInput = String(lengthInput.prefix(upper))
+        }
+    }
     
     private func formatNumber(_ input: String) -> String {
         let formatter = NumberFormatter()
@@ -196,19 +209,9 @@ extension View {
     func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
-    
-    func placeholder<Content: View>(
-           when shouldShow: Bool,
-           alignment: Alignment = .leading,
-           @ViewBuilder placeholder: () -> Content) -> some View {
-
-           ZStack(alignment: alignment) {
-               placeholder().opacity(shouldShow ? 1 : 0)
-               self
-           }
-       }
 }
 
 #Preview {
     ConvertView()
 }
+
