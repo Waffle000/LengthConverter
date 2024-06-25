@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 
-struct ContentView: View {
+struct ConvertView: View {
     @State private var selectedUnit: LengthUnit = .m
     @State private var targetUnit: LengthUnit = .cm
     @State private var lengthInput: String = ""
@@ -30,7 +30,10 @@ struct ContentView: View {
                             .padding(.top, 8)
                         
                         HStack {
-                            TextField("Number", text: $lengthInput)
+                            TextField("", text: $lengthInput)
+                                .placeholder(when: lengthInput.isEmpty) {
+                                    Text("Number").foregroundColor(.white.opacity(0.3))
+                                }
                                 .keyboardType(.decimalPad)
                                 .frame(width: 248)
                                 .padding(.leading, 8)
@@ -126,6 +129,8 @@ struct ContentView: View {
                     Text("Reset").font(.title3).fontWeight(.bold ).foregroundStyle(Color.white).padding().frame(maxWidth: .infinity).background(Color.blue.opacity(0.7)).cornerRadius(16).padding(.horizontal, 16)
                 })
             }
+        }.onTapGesture {
+            hideKeyboard()
         }
     }
     
@@ -187,6 +192,23 @@ struct ContentView: View {
     }
 }
 
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+    
+    func placeholder<Content: View>(
+           when shouldShow: Bool,
+           alignment: Alignment = .leading,
+           @ViewBuilder placeholder: () -> Content) -> some View {
+
+           ZStack(alignment: alignment) {
+               placeholder().opacity(shouldShow ? 1 : 0)
+               self
+           }
+       }
+}
+
 #Preview {
-    ContentView()
+    ConvertView()
 }
